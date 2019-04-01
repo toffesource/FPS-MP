@@ -86,6 +86,10 @@ onready var scn_impact_fx = preload("res://scenes/impact_fx.tscn")
 onready var scn_blood_fx = preload("res://scenes/blood_fx.tscn")
 onready var scn_muzzle_flash_fx = preload("res://scenes/muzzle_flash_fx.tscn")
 
+# stairs
+const MAX_STAIR_SLOPE = 20
+const STAIR_JUMP_HEIGHT = 4
+
 func _ready():
 	connect("health_changed", self, "_on_health_changed")
 	connect("ammo_changed", self, "_on_ammo_changed")
@@ -105,6 +109,7 @@ func _ready():
 		$hud/ammo.visible = true
 		$hud/sprint.visible = true
 		$hud/cross.visible = true
+		$hud/displace.visible = true
 		$mesh.visible = false
 		$head/gun_holder/gun.visible = true
 		
@@ -122,6 +127,7 @@ func _physics_process(delta):
 		process_headbob(delta)
 		process_blindness(delta)
 		#process_crouch(delta)
+		process_stairs()
 
 slave func update_trans_rot(pos, rot, head_rotation):
 	translation = pos
@@ -418,12 +424,14 @@ sync func die():
 func hit(damage, knockback):
 	set_health(health - damage)
 	vel = knockback
-	if has_node("audio/hurt"):
-		$audio/hurt.play()
-	# displace effect
-	$hud/displace.get_material().set_shader_param('dispAmt', knockback.x / 250)
-	$hud/displace.get_material().set_shader_param('abberationAmtX', knockback.x / 250)
-	$hud/displace.get_material().set_shader_param('abberationAmtY', knockback.y / 250)
+	
+	if(is_network_master()):
+		if has_node("audio/hurt"):
+			$audio/hurt.play()
+		# displace effect
+		$hud/displace.get_material().set_shader_param('dispAmt', knockback.x / 250)
+		$hud/displace.get_material().set_shader_param('abberationAmtX', knockback.x / 250)
+		$hud/displace.get_material().set_shader_param('abberationAmtY', knockback.y / 250)
 
 func respawn():
 	is_dead = false
@@ -472,10 +480,21 @@ func _on_ammo_changed(ammo):
 	
 func process_blindness(delta):
 	if $col_eye_L.disabled or $col_eye_R.disabled:
-		$hud/displace.get_material().set_shader_param('dispAmt', 0.005)
-		$hud/displace.get_material().set_shader_param('abberationAmtX', 0.005)
-		$hud/displace.get_material().set_shader_param('abberationAmtY', 0.005)
+		$hud/displace.get_material().set_shader_param('dispAmt', 0.0015)
+		$hud/displace.get_material().set_shader_param('abberationAmtX', 0.001)
+		$hud/displace.get_material().set_shader_param('abberationAmtY', 0.001)
 	else:
 		$hud/displace.get_material().set_shader_param('dispAmt', 0)
 		$hud/displace.get_material().set_shader_param('abberationAmtX', 0)
 		$hud/displace.get_material().set_shader_param('abberationAmtY', 0)
+
+# stairs
+func process_stairs():
+	if has_node("stair_catcher") and !is_crouching:
+		$stair_catcher.translation.x = input_movement_vector.x
+		$stair_catcher.translation.z = -input_movement_vector.y
+		if dir.length() > 0 and $stair_catcher.is_colliding():
+			var stair_normal = $stair_catcher.get_collision_normal()
+			var stair_angle = rad2deg(acos(stair_normal.dot(Vector3.UP)))
+			if stair_angle < MAX_STAIR_SLOPE:
+				vel.y = STAIR_JUMP_HEIGHT
