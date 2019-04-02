@@ -16,14 +16,14 @@ _global_script_class_icons={
 [application]
 
 config/name="FPS MP"
-run/main_scene="res://lobby.tscn"
+run/main_scene="res://scenes/lobby.tscn"
 config/icon="res://icon.png"
 
 [autoload]
 
 globals="*res://scripts/globals.gd"
 utils="*res://scripts/utils.gd"
-gamestate="*res://gamestate.gd"
+gamestate="*res://scripts/gamestate.gd"
 
 [display]
 

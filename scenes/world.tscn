@@ -38,7 +38,7 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -2.40585, 2, -9 )
 editor/display_folded = true
 
 [node name="0" type="Spatial" parent="spawn_points"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4, 3.53911 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 127.039, 5.68471, 43.2967 )
 
 [node name="1" type="Spatial" parent="spawn_points"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 5.28214, 9.49738, 15.4615 )

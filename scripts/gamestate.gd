@@ -73,7 +73,7 @@ remote func unregister_player(id):
 
 remote func pre_start_game(spawn_points):
 	# Change scene
-	var world = load("res://world.tscn").instance()
+	var world = load("res://scenes/world.tscn").instance()
 	get_tree().get_root().add_child(world)
 
 	get_tree().get_root().get_node("lobby").hide()
